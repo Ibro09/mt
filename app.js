@@ -81,10 +81,17 @@ app.post("/analyze", async (req, res) => {
 });
 
 app.get("/analyze", async (req, res) => {
+  const browser = await puppeteer.launch({
+    args:[
+      "--disable-setuid-sandbox",
+      "--no-sandbox",
+      "--single-process",
+      "--no-zygote"
+    ],
+    executablePath:process.env.NODE_ENV==='producion'?process.env.PUPPETEER_EXECUTABLE_PATH:puppeteer.executablePath,
+    headless: "new", // Use the new Headless mode
+  });
   try {
-    const browser = await puppeteer.launch({
-      headless: "new", // Use the new Headless mode
-    });
     const page = await browser.newPage();
 
     await page.goto('https://ibroport.netlify.app');
