@@ -5,26 +5,19 @@ const cheerio = require("cheerio");
 const puppeteer = require("puppeteer");
 const { chromium } = require("playwright");
 
- 
 // const cors = require("cors"); // Import the cors middleware
 
 const app = express();
 
 // Serve static files from the "public" directory
-app.use(express.static(path.join(__dirname, "dist")));
 
 app.use(express.json());
-
-
+   
 // Define a route to serve the index.html file
 app.get("/", (req, res) => {
   console.log(express.static(path.join(__dirname, "dist")));
-  res.send('../dist/index.html');
+  res.send("../dist/index.html");
 });
-
-
-
-
 
 app.post("/", async (req, res) => {
   console.log(req.body.url);
@@ -43,15 +36,16 @@ app.post("/", async (req, res) => {
       const name =
         $(element).attr("name") ||
         $(element).attr("property") ||
-        $(element).attr("charset")&&'charset' ||
+        ($(element).attr("charset") && "charset") ||
         $(element).attr("http-equiv") ||
         $(element).attr("scheme") ||
         $(element).attr("itemprop") ||
         "";
-      const content = $(element).attr("content")||  $(element).attr("charset") || "";
+      const content =
+        $(element).attr("content") || $(element).attr("charset") || "";
       metaTagData.push({ name, content });
     });
-     console.log(metaTagData);
+    console.log(metaTagData);
     res.json(metaTagData);
   } catch (error) {
     console.error(error);
@@ -62,7 +56,6 @@ app.post("/", async (req, res) => {
 
   // res.json([{'name':''},{'name':'content'},''])
 });
-
 
 app.post("/analyze", async (req, res) => {
   try {
@@ -88,53 +81,29 @@ app.post("/analyze", async (req, res) => {
 });
 
 app.get("/analyze", async (req, res) => {
-  console.log(req.body);
-    try {
+  try {
     const browser = await puppeteer.launch({
       headless: "new", // Use the new Headless mode
-    });    const page = await browser.newPage();
+    });
+    const page = await browser.newPage();
 
-    await page.goto(req.body.url, { waitUntil: "networkidle0" });
+    await page.goto('https://ibroport.netlify.app');
 
     const imageElements = await page.$$eval("img", imgs =>
       imgs.map(img => img.getAttribute("alt")),
     );
 
     await browser.close();
-  console.log(imageElements);
+
     res.json({ imageAltTexts: imageElements });
-    } catch (error) {
-      console.error("Error:", error);
-    }
- 
+  } catch (error) {
+    console.error("Error:", error);
+  }
 });
-
-
-
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+});  
 
 // (async () => {
 //   try {
@@ -151,7 +120,7 @@ app.listen(port, () => {
 //     // Extract content
 //     const content = await page.evaluate(() => {
 //       // Customize this part to extract the content you need
-//      const images = Array.from(document.querySelectorAll("img")); 
+//      const images = Array.from(document.querySelectorAll("img"));
 //      const imgs = images.map(img => {
 //       return img.alt ? img.alt : "nil";
 //       });
