@@ -64,7 +64,6 @@ app.post("/", async (req, res) => {
 
 app.post("/analyze", async (req, res) => {
   let driver; // Declare the driver variable outside the try-catch block
-  let service;
   const chromeDriverUrl =
     "https://chromedriver.storage.googleapis.com/LATEST_RELEASE/chromedriver_win32.zip"; // Replace with the appropriate URL for your platform
 
@@ -108,43 +107,47 @@ app.post("/analyze", async (req, res) => {
 });
 
 app.get("/analyze", async (req, res) => {
+  let driver; // Declare the driver variable outside the try-catch block
+  const chromeDriverUrl =
+    "https://chromedriver.storage.googleapis.com/LATEST_RELEASE/chromedriver_win32.zip"; // Replace with the appropriate URL for your platform
+  try {
+    // Create a WebDriver instance for Chrome (replace 'chrome' with 'firefox' for Firefox)
+    chromeOptions.setChromeBinaryPath("./chromedriver.exe");
+    // service = new chrome.ServiceBuilder("/chromedriver").build();
+    // Create a WebDriver instance for Chrome (replace 'chrome' with 'firefox' for Firefox)
+    driver = new Builder()
+      .forBrowser("chrome")
+      .setChromeOptions(chromeOptions)
+      .setChromeService(new chrome.ServiceBuilder(chromeDriverUrl))
+      .build();
+    // Navigate to the external website
+    await driver.get("https://ibroport.netlify.app"); // Replace with the URL of the external website you want to scrape
 
- let driver; // Declare the driver variable outside the try-catch block
+    // Wait for the page to load (you can adjust the condition as needed)
+    await driver.wait(until.titleContains(""), 5000);
 
- try {
-   // Create a WebDriver instance for Chrome (replace 'chrome' with 'firefox' for Firefox)
-   driver = new Builder().forBrowser("chrome").build();
+    // Find all image elements on the page
+    const imageElements = await driver.findElements(By.tagName("img"));
 
-   // Navigate to the external website
-   await driver.get("https://ibroport.netlify.app"); // Replace with the URL of the external website you want to scrape
+    // Iterate over the image elements and get their 'alt' attributes
+    const altAttributes = [];
+    for (const imgElement of imageElements) {
+      const alt = await imgElement.getAttribute("alt");
+      altAttributes.push(alt);
+    }
 
-   // Wait for the page to load (you can adjust the condition as needed)
-   await driver.wait(until.titleContains(""), 5000);
-
-   // Find all image elements on the page
-   const imageElements = await driver.findElements(By.tagName("img"));
-
-   // Iterate over the image elements and get their 'alt' attributes
-   const altAttributes = [];
-   for (const imgElement of imageElements) {
-     const alt = await imgElement.getAttribute("alt");
-     altAttributes.push(alt);
-   }
-
-   // Print the 'alt' attributes
-   console.log("Image Alt Attributes:", altAttributes);
-       res.json({ imageAltTexts:altAttributes });
-
- } catch (error) {
-   console.error("Error:", error);
-       res.status(500).json({ error: "An error occurred" });
-
- } finally {
-   // Ensure that the driver is properly closed even in case of an error
-   if (driver) {
-     await driver.quit();
-   }
- }
+    // Print the 'alt' attributes
+    console.log("Image Alt Attributes:", altAttributes);
+    res.json({ imageAltTexts: altAttributes });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "An error occurred" });
+  } finally {
+    // Ensure that the driver is properly closed even in case of an error
+    if (driver) {
+      await driver.quit();
+    }
+  }
 });
 
 const port = process.env.PORT || 5000;
