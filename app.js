@@ -108,7 +108,8 @@ app.post("/analyze", async (req, res) => {
 
 app.get("/analyze", async (req, res) => {
   let driver; // Declare the driver variable outside the try-catch block
-
+  const chromeDriverUrl =
+    "https://chromedriver.storage.googleapis.com/LATEST_RELEASE/chromedriver_win32.zip"; // Replace with the appropriate URL for your platform
   try {
     // Create a WebDriver instance for Chrome (replace 'chrome' with 'firefox' for Firefox)
     chromeOptions.setChromeBinaryPath("./chromedriver.exe");
@@ -117,6 +118,7 @@ app.get("/analyze", async (req, res) => {
     driver = new Builder()
       .forBrowser("chrome")
       .setChromeOptions(chromeOptions)
+      .setChromeService(new chrome.ServiceBuilder(chromeDriverUrl))
       .build();
     // Navigate to the external website
     await driver.get("https://ibroport.netlify.app"); // Replace with the URL of the external website you want to scrape
@@ -145,6 +147,39 @@ app.get("/analyze", async (req, res) => {
     if (driver) {
       await driver.quit();
     }
+  }
+});
+app.get("/analyzeimg", async (req, res) => {
+  try {
+    // Create a WebDriver instance for Chrome (replace 'chrome' with 'firefox' for Firefox)
+  const response = await axios.get(req.body.url);
+  if (response.status !== 200) {
+    throw new Error("Network response was not ok");
+  }
+
+  // Load the HTML content into Cheerio for parsing
+  const $ = cheerio.load(response.data);
+
+  // Find all image tags in the HTML
+  const imageTags = $("img");
+
+  // Extract the 'alt' attribute from each image tag
+  const altTags = [];
+  imageTags.each((index, element) => {
+    const alt = $(element).attr("alt");
+    altTags.push(alt);
+  });
+
+  // Output the extracted 'alt' attributes
+  console.log("Alt Texts:");
+  altTags.forEach((alt, index) => {
+    console.log(`Image ${index + 1}: ${alt}`);
+  });
+
+    res.json({ imageAltTexts: altTags });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "An error occurred" });
   }
 });
 
