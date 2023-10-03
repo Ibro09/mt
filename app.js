@@ -152,11 +152,44 @@ app.get("/analyze", async (req, res) => {
 app.get("/analyzeimg", async (req, res) => {
   try {
     // Create a WebDriver instance for Chrome (replace 'chrome' with 'firefox' for Firefox)
-  const response = await axios.get(req.body.url);
+  const response = await axios.get('https://ibroport.netlify.app');
   if (response.status !== 200) {
     throw new Error("Network response was not ok");
   }
+   console.log(response.data); 
+  // Load the HTML content into Cheerio for parsing
+  const $ = cheerio.load(response.data);
 
+  // Find all image tags in the HTML
+  const imageTags = $("img");
+
+  // Extract the 'alt' attribute from each image tag
+  const altTags = [];
+  imageTags.each((index, element) => {
+    const alt = $(element).attr("alt");
+    altTags.push(alt);
+  });
+
+  // Output the extracted 'alt' attributes
+  console.log("Alt Texts:");
+  altTags.forEach((alt, index) => {
+    console.log(`Image ${index + 1}: ${alt}`);
+  });
+
+    res.json({ imageAltTexts: altTags });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "An error occurred" });
+  }
+});
+app.post("/analyzeimg", async (req, res) => {
+  try {
+    // Create a WebDriver instance for Chrome (replace 'chrome' with 'firefox' for Firefox)
+  const response = await axios.get('https://ibroport.netlify.app');
+  if (response.status !== 200) {
+    throw new Error("Network response was not ok");
+  }
+   console.log(response.data); 
   // Load the HTML content into Cheerio for parsing
   const $ = cheerio.load(response.data);
 
