@@ -61,11 +61,12 @@ app.post("/", async (req, res) => {
 
 app.post("/analyze", async (req, res) => {
   let driver; // Declare the driver variable outside the try-catch block
+let service;
 
   try {
+    service = new chrome.ServiceBuilder("/chromedriver").build();
     // Create a WebDriver instance for Chrome (replace 'chrome' with 'firefox' for Firefox)
-    driver = new Builder().forBrowser("chrome").build();
-
+    driver = new Builder().forBrowser("firefox").build();
     // Navigate to the external website
     await driver.get(req.body.url); // Replace with the URL of the external website you want to scrape
 
