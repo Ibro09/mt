@@ -15,7 +15,9 @@ const app = express();
 // Serve static files from the "public" directory
 
 app.use(express.json()); 
-   
+   const chromeDriverUrl = 'https://chromedriver.storage.googleapis.com/LATEST_RELEASE/chromedriver_win32.zip'; // Replace with the appropriate URL for your platform
+chromeOptions.addArguments('--headless'); // Optional: Run Chrome in headless mode
+
 // Define a route to serve the index.html file
 app.get("/", (req, res) => {
   res.send("done");
