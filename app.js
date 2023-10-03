@@ -108,8 +108,7 @@ app.post("/analyze", async (req, res) => {
 
 app.get("/analyze", async (req, res) => {
   let driver; // Declare the driver variable outside the try-catch block
-  const chromeDriverUrl =
-    "https://chromedriver.storage.googleapis.com/LATEST_RELEASE/chromedriver_win32.zip"; // Replace with the appropriate URL for your platform
+  const chromeDriverUrl = "./chromedriver.exe"; // Replace with the appropriate URL for your platform
   try {
     // Create a WebDriver instance for Chrome (replace 'chrome' with 'firefox' for Firefox)
     chromeOptions.setChromeBinaryPath("./chromedriver.exe");
