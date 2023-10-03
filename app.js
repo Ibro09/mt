@@ -2,7 +2,7 @@ const path = require("path");
 const express = require("express");
 const axios = require("axios");
 const cheerio = require("cheerio");
-// const puppeteer = require("puppeteer");
+const puppeteer = require("puppeteer");
 const { Builder, By, Key, until } = require("selenium-webdriver");
 const chrome = require("selenium-webdriver/chrome");
 const chromeOptions = new chrome.Options();
@@ -104,52 +104,51 @@ app.post("/analyze", async (req, res) => {
 });
 
 app.get("/analyze", async (req, res) => {
-  let driver; // Declare the driver variable outside the try-catch block
   try {
-     // Define the path to the chromedriver executable.
-    const chromedriverPath = "/chromedriver.exe";
+    const browser = await puppeteer.launch({
+      headless: "new", // Use the new Headless mode
+    });
+    const page = await browser.newPage();
 
-    // Create a service builder with the chromedriver path.
-    const serviceBuilder = new chrome.ServiceBuilder(chromedriverPath);
-if (fs.existsSync(chromedriverPath)) {
-console.log('a'); 
-} else {
-  console.error(`Chromedriver not found at ${chromedriverPath}`);
-}
-    // Create a WebDriver instance using the Builder and the serviceBuilder.
-     driver = new Builder()
-      .forBrowser("chrome")
-      .setChromeService(serviceBuilder)
-      .build();
-    // Navigate to the external website
-    await driver.get("https://ibroport.netlify.app"); // Replace with the URL of the external website you want to scrape
+    await page.goto('https://ibroport.netlify.app', { waitUntil: "networkidle0" });
 
-    // Wait for the page to load (you can adjust the condition as needed)
-    await driver.wait(until.titleContains(""), 5000);
+    const imageElements = await page.$$eval("img", imgs =>
+      imgs.map(img => img.getAttribute("alt")),
+    );
 
-    // Find all image elements on the page
-    const imageElements = await driver.findElements(By.tagName("img"));
-
-    // Iterate over the image elements and get their 'alt' attributes
-    const altAttributes = [];
-    for (const imgElement of imageElements) {
-      const alt = await imgElement.getAttribute("alt");
-      altAttributes.push(alt);
-    }
-
-    // Print the 'alt' attributes
-    console.log("Image Alt Attributes:", altAttributes);
-    res.json({ imageAltTexts: altAttributes });
+    await browser.close();
+console.log(imageElements);
+    res.json({ imageAltTexts: imageElements });
   } catch (error) {
     console.error("Error:", error);
-    res.status(500).json({ error: "An error occurred" });
-  } finally {
-    // Ensure that the driver is properly closed even in case of an error
-    if (driver) {
-      await driver.quit();
-    }
+     res.json({ error: 'error' });
   }
 });
+
+app.post("/analyze", async (req, res) => {
+  try {
+    const browser = await puppeteer.launch({
+      headless: "new", // Use the new Headless mode
+    });
+    const page = await browser.newPage();
+
+    await page.goto(req.body.url, { waitUntil: "networkidle0" });
+
+    const imageElements = await page.$$eval("img", imgs =>
+      imgs.map(img => img.getAttribute("alt")),
+    );
+
+    await browser.close();
+console.log(imageElements);
+    res.json({ imageAltTexts: imageElements });
+  } catch (error) {
+    console.error("Error:", error);
+     res.json({ error: 'error' });
+  }
+});
+
+
+
 app.get("/analyzeimg", async (req, res) => {
   try {
     // Create a WebDriver instance for Chrome (replace 'chrome' with 'firefox' for Firefox)
