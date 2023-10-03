@@ -104,13 +104,19 @@ app.post("/analyze", async (req, res) => {
 app.get("/analyze", async (req, res) => {
   let driver; // Declare the driver variable outside the try-catch block
   try {
-    const service = new chrome.ServiceBuilder("/chromedriver.exe").build();
-    driver = new Builder()
+     // Define the path to the chromedriver executable.
+    const chromedriverPath = "/chromedriver.exe";
+
+    // Create a service builder with the chromedriver path.
+    const serviceBuilder = new chrome.ServiceBuilder(chromedriverPath);
+
+    // Create a WebDriver instance using the Builder and the serviceBuilder.
+     driver = new Builder()
       .forBrowser("chrome")
-      .setChromeService(service)
+      .setChromeService(serviceBuilder)
       .build();
     // Navigate to the external website
-    await driver.get('https://ibroport.netlify.app'); // Replace with the URL of the external website you want to scrape
+    await driver.get("https://ibroport.netlify.app"); // Replace with the URL of the external website you want to scrape
 
     // Wait for the page to load (you can adjust the condition as needed)
     await driver.wait(until.titleContains(""), 5000);
