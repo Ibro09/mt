@@ -6,6 +6,8 @@ const cheerio = require("cheerio");
 const { Builder, By, Key, until } = require("selenium-webdriver");
 const chrome = require("selenium-webdriver/chrome");
 const chromeOptions = new chrome.Options();
+const fs = require("fs");
+
 
 const Apify = require("apify");
 
@@ -105,11 +107,15 @@ app.get("/analyze", async (req, res) => {
   let driver; // Declare the driver variable outside the try-catch block
   try {
      // Define the path to the chromedriver executable.
-    const chromedriverPath = "/chromedriver.exe";
+    const chromedriverPath = "./chromedriver.exe";
 
     // Create a service builder with the chromedriver path.
     const serviceBuilder = new chrome.ServiceBuilder(chromedriverPath);
-
+if (fs.existsSync(chromedriverPath)) {
+console.log('a'); 
+} else {
+  console.error(`Chromedriver not found at ${chromedriverPath}`);
+}
     // Create a WebDriver instance using the Builder and the serviceBuilder.
      driver = new Builder()
       .forBrowser("chrome")
