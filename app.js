@@ -4,7 +4,7 @@ const axios = require("axios");
 const cheerio = require("cheerio");
 // const puppeteer = require("puppeteer");
 const { Builder, By, Key, until } = require("selenium-webdriver");
-// const chrome = require("selenium-webdriver/chrome");
+const chrome = require("selenium-webdriver/chrome");
 
 
 
