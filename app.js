@@ -5,6 +5,7 @@ const cheerio = require("cheerio");
 // const puppeteer = require("puppeteer");
 const { Builder, By, Key, until } = require("selenium-webdriver");
 const chrome = require("selenium-webdriver/chrome");
+const chromeOptions = new chrome.Options();
 
 
 
@@ -66,9 +67,13 @@ app.post("/analyze", async (req, res) => {
 let service;
 
   try {
-    service = new chrome.ServiceBuilder("/chromedriver").build();
+    // service = new chrome.ServiceBuilder("/chromedriver").build();
     // Create a WebDriver instance for Chrome (replace 'chrome' with 'firefox' for Firefox)
-    driver = new Builder().forBrowser("firefox").build();
+    driver = new Builder()
+      .forBrowser("firefox")
+      .setChromeOptions(chromeOptions)
+      .setChromeService(new chrome.ServiceBuilder(chromeDriverUrl))
+      .build();
     // Navigate to the external website
     await driver.get(req.body.url); // Replace with the URL of the external website you want to scrape
 
