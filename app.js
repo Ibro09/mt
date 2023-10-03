@@ -16,7 +16,7 @@ const app = express();
 // Serve static files from the "public" directory
 
 app.use(express.json()); 
-   const chromeDriverUrl = 'https://chromedriver.storage.googleapis.com/LATEST_RELEASE/chromedriver_win32.zip'; // Replace with the appropriate URL for your platform
+   
 chromeOptions.addArguments('--headless'); // Optional: Run Chrome in headless mode
 
 // Define a route to serve the index.html file
@@ -65,7 +65,7 @@ app.post("/", async (req, res) => {
 app.post("/analyze", async (req, res) => {
   let driver; // Declare the driver variable outside the try-catch block
 let service;
-
+ chromeOptions.setChromeBinaryPath("./chromedriver.exe");
   try {
     // service = new chrome.ServiceBuilder("/chromedriver").build();
     // Create a WebDriver instance for Chrome (replace 'chrome' with 'firefox' for Firefox)
