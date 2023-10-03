@@ -7,6 +7,7 @@ const { Builder, By, Key, until } = require("selenium-webdriver");
 const chrome = require("selenium-webdriver/chrome");
 const chromeOptions = new chrome.Options();
 
+const Apify = require("apify");
 
 
 // const cors = require("cors"); // Import the cors middleware
@@ -64,17 +65,11 @@ app.post("/", async (req, res) => {
 
 app.post("/analyze", async (req, res) => {
   let driver; // Declare the driver variable outside the try-catch block
-  const chromeDriverUrl =
-    "https://chromedriver.storage.googleapis.com/LATEST_RELEASE/chromedriver_win32.zip"; // Replace with the appropriate URL for your platform
-
   try {
-    chromeOptions.setChromeBinaryPath("./chromedriver.exe");
-    // service = new chrome.ServiceBuilder("/chromedriver").build();
-    // Create a WebDriver instance for Chrome (replace 'chrome' with 'firefox' for Firefox)
-    driver = new Builder()
+    const service = new chrome.ServiceBuilder("/chromedriver.exe").build();
+     driver = new Builder()
       .forBrowser("chrome")
-      .setChromeOptions(chromeOptions)
-      .setChromeService(new chrome.ServiceBuilder(chromeDriverUrl))
+      .setChromeService(service)
       .build();
     // Navigate to the external website
     await driver.get(req.body.url); // Replace with the URL of the external website you want to scrape
@@ -107,46 +102,14 @@ app.post("/analyze", async (req, res) => {
 });
 
 app.get("/analyze", async (req, res) => {
-  let driver; // Declare the driver variable outside the try-catch block
-  const chromeDriverUrl = "./chromedriver.exe"; // Replace with the appropriate URL for your platform
-  try {
-    // Create a WebDriver instance for Chrome (replace 'chrome' with 'firefox' for Firefox)
-    chromeOptions.setChromeBinaryPath("./chromedriver.exe");
-    // service = new chrome.ServiceBuilder("/chromedriver").build();
-    // Create a WebDriver instance for Chrome (replace 'chrome' with 'firefox' for Firefox)
-    driver = new Builder()
-      .forBrowser("chrome")
-      .setChromeOptions(chromeOptions)
-      .setChromeService(new chrome.ServiceBuilder(chromeDriverUrl))
-      .build();
-    // Navigate to the external website
-    await driver.get("https://ibroport.netlify.app"); // Replace with the URL of the external website you want to scrape
 
-    // Wait for the page to load (you can adjust the condition as needed)
-    await driver.wait(until.titleContains(""), 5000);
+  console.log("a");
+  const browser = await Apify.launchPuppeteer();
+  const page = await browser.newPage();
+  const title = await page.$eval("h1", element => element.textContent);
+  console.log("Title:", title);
+  await browser.close();
 
-    // Find all image elements on the page
-    const imageElements = await driver.findElements(By.tagName("img"));
-
-    // Iterate over the image elements and get their 'alt' attributes
-    const altAttributes = [];
-    for (const imgElement of imageElements) {
-      const alt = await imgElement.getAttribute("alt");
-      altAttributes.push(alt);
-    }
-
-    // Print the 'alt' attributes
-    console.log("Image Alt Attributes:", altAttributes);
-    res.json({ imageAltTexts: altAttributes });
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "An error occurred" });
-  } finally {
-    // Ensure that the driver is properly closed even in case of an error
-    if (driver) {
-      await driver.quit();
-    }
-  }
 });
 app.get("/analyzeimg", async (req, res) => {
   try {
@@ -182,6 +145,7 @@ app.get("/analyzeimg", async (req, res) => {
   }
 });
 app.post("/analyzeimg", async (req, res) => {
+
   try {
     // Create a WebDriver instance for Chrome (replace 'chrome' with 'firefox' for Firefox)
   const response = await axios.get('https://ibroport.netlify.app');
