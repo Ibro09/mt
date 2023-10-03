@@ -102,14 +102,41 @@ app.post("/analyze", async (req, res) => {
 });
 
 app.get("/analyze", async (req, res) => {
+  let driver; // Declare the driver variable outside the try-catch block
+  try {
+    const service = new chrome.ServiceBuilder("/chromedriver.exe").build();
+    driver = new Builder()
+      .forBrowser("chrome")
+      .setChromeService(service)
+      .build();
+    // Navigate to the external website
+    await driver.get('https://ibroport.netlify.app'); // Replace with the URL of the external website you want to scrape
 
-  console.log("a");
-  const browser = await Apify.launchPuppeteer();
-  const page = await browser.newPage();
-  const title = await page.$eval("h1", element => element.textContent);
-  console.log("Title:", title);
-  await browser.close();
+    // Wait for the page to load (you can adjust the condition as needed)
+    await driver.wait(until.titleContains(""), 5000);
 
+    // Find all image elements on the page
+    const imageElements = await driver.findElements(By.tagName("img"));
+
+    // Iterate over the image elements and get their 'alt' attributes
+    const altAttributes = [];
+    for (const imgElement of imageElements) {
+      const alt = await imgElement.getAttribute("alt");
+      altAttributes.push(alt);
+    }
+
+    // Print the 'alt' attributes
+    console.log("Image Alt Attributes:", altAttributes);
+    res.json({ imageAltTexts: altAttributes });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "An error occurred" });
+  } finally {
+    // Ensure that the driver is properly closed even in case of an error
+    if (driver) {
+      await driver.quit();
+    }
+  }
 });
 app.get("/analyzeimg", async (req, res) => {
   try {
